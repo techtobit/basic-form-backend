@@ -30,6 +30,14 @@ async function run() {
             res.send(tasks);
         })
 
+        //Save Data
+        app.get('/saveData', async (req, res) => {
+            const query = {};
+            const cursor = saveCollection.find(query)
+            const tasks = await cursor.toArray()
+            res.send(tasks);
+        })
+
         //Save Form Data
         app.post('/saveData', async (req, res) => {
             const data = req.body;
@@ -39,19 +47,28 @@ async function run() {
         })
 
         //Update Form Data
-        app.put('/task/:id', async (req, res) => {
-            const id = req.params.id;
-            const updateDescription = req.body;
-            const filter = { _id: ObjectId(id) };
-            const options = { upsert: true };
-            const upDateTask = {
-                $set: {
-                    Description: updateDescription.Description
-                }
+        app.put('/saveData/:id', async (req, res) => {
+            try {
+                const id = req.params.id;
+                const updateData = req.body;
+                console.log(updateData);
+                const filter = { _id: new ObjectId(id) };
+                const options = { upsert: false };
+                const upDateTask = {
+                    $set: {
+                        name: updateData.name,
+                        selectedSectors: updateData.selectedSectors,
+                        agreeToTerms: true
+                    }
+                };
+
+                const updateTask = await saveCollection.updateOne(filter, upDateTask, options);
+                res.send(updateTask);
+            } catch (error) {
+                console.error('Error updating task:', error);
+                res.status(500).send('Error updating task');
             }
-            const updateTask = await saveCollection.updateOne(filter, upDateTask, options)
-            res.send(updateTask)
-        })
+        });
 
     } catch (error) {
 
