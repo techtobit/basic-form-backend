@@ -17,21 +17,28 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 async function run() {
     try {
         await client.connect();
-        const taskCollection = client.db("codify").collection("itemList");
-        // const taskFinishCollection = client.db("TodoApp").collection("TaskFinish");
+        const collection = client.db("codify").collection("itemList");
+        const saveCollection = client.db("codify").collection("formdata");
 
         // ---------------- Form App ---------------//
 
-        //Display All Task
+        //Display All Selection List
         app.get('/data', async (req, res) => {
             const query = {};
-            const cursor = taskCollection.find(query)
+            const cursor = collection.find(query)
             const tasks = await cursor.toArray()
             res.send(tasks);
         })
 
+        //Save Form Data
+        app.post('/saveData', async (req, res) => {
+            const data = req.body;
+            console.log(data);
+            const newTask = await saveCollection.insertOne(data)
+            res.send(newTask);
+        })
 
-        //For Updating Task
+        //Update Form Data
         app.put('/task/:id', async (req, res) => {
             const id = req.params.id;
             const updateDescription = req.body;
@@ -42,36 +49,9 @@ async function run() {
                     Description: updateDescription.Description
                 }
             }
-            const updateTask = await taskCollection.updateOne(filter, upDateTask, options)
+            const updateTask = await saveCollection.updateOne(filter, upDateTask, options)
             res.send(updateTask)
         })
-
-
-        //For Add new Task on list
-        app.post('/task', async (req, res) => {
-            const data = req.body;
-            const newTask = await taskCollection.insertOne(data)
-            res.send(newTask);
-        })
-
-
-
-        //The Finish task will remove from List
-        app.delete('/task/:id', async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: ObjectId(id) };
-            const taskFinish = taskCollection.deleteOne(query)
-            res.send(taskFinish);
-        })
-
-        //The only Finish task will remove from Database
-        app.delete('/taskFinish/:id', async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: ObjectId(id) };
-            const taskFinish = taskFinishCollection.deleteOne(query)
-            res.send(taskFinish);
-        })
-
 
     } catch (error) {
 
