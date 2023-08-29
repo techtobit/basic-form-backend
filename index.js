@@ -83,3 +83,4 @@ run().catch(console.dir);
 
 app.get('/', (req, res) => res.send('Hello App Hosted In vercel'))
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
+module.exports = app;
